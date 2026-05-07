@@ -259,26 +259,9 @@
         I understand this is a <strong>pre-intake assistant</strong> and not a substitute for dental advice
       </label>
     </div>
-    <div style="margin-bottom:16px;">
-      <label style="font-size:12px;font-weight:700;color:#5C6B7A;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;">🔑 Your Anthropic API Key</label>
-      <input id="api-key-input" type="password" placeholder="Paste your sk-ant-... key here"
-        style="width:100%;padding:10px 14px;border:1.5px solid #D5DEE8;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13.5px;outline:none;"
-        oninput="checkConsent()" />
-      <p style="font-size:11px;color:#9BAAB8;margin-top:5px;">Get your key at console.anthropic.com → API Keys. Never share it with anyone.</p>
-    </div>
-
     <button id="consent-btn" disabled onclick="startChat()">Begin Patient Intake &rarr;</button>
     <p class="ny-note">🏙️ Serving patients in New York · All data handled per 45 CFR §164 (HIPAA Security Rule)</p>
   </div>
-</div>
-
-<div id="api-key-banner" style="width:100%;max-width:780px;background:#FFF8E7;border:1.5px solid #F0C060;border-radius:16px;padding:14px 20px;display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
-  <span style="font-size:20px">🔑</span>
-  <div style="flex:1;min-width:200px">
-    <p style="font-size:13px;font-weight:600;color:#7A5000;margin-bottom:6px">Paste your Anthropic API Key below to start (it starts with <code>sk-ant-</code>)</p>
-    <input id="api-key-input" type="password" placeholder="sk-ant-api03-..." style="width:100%;padding:9px 12px;border:1.5px solid #D5B060;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:#FFFDF5;outline:none;" />
-  </div>
-  <button onclick="document.getElementById('api-key-banner').style.display='none';" style="padding:10px 18px;background:linear-gradient(135deg,#1A7A8A,#0B1E3D);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;">Save Key ✓</button>
 </div>
 
 <div class="chat-shell">
@@ -355,8 +338,7 @@ Tone: warm, professional, short paragraphs, use first name once known.`;
 
 function checkConsent() {
   const allChecked = ['c1','c2','c3'].every(id => document.getElementById(id).checked);
-  const hasKey = document.getElementById('api-key-input')?.value?.trim().startsWith('sk-ant-');
-  document.getElementById('consent-btn').disabled = !(allChecked && hasKey);
+  document.getElementById('consent-btn').disabled = !allChecked;
 }
 
 function startChat() {
@@ -516,22 +498,9 @@ async function callClaude(userText, isInit = false) {
     : [...conversationHistory];
 
   try {
-    const apiKey = document.getElementById('api-key-input')?.value?.trim();
-    if (!apiKey) {
-      hideTyping();
-      isLoading = false;
-      document.getElementById('send-btn').disabled = false;
-      document.getElementById('api-key-banner').style.display = 'flex';
-      return;
-    }
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('/api/chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-iab': 'true'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
